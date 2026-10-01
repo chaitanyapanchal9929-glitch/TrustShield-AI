@@ -2,7 +2,7 @@
 
 **Check before you trust. Protect before you share.**
 
-TrustShield is a privacy-first web app for reviewing suspicious messages and protecting personal details before sharing them. Its current scanner uses explicit local text-pattern rules, not a live Gemini model. It shows the matching evidence and explains the limits of the assessment rather than presenting a score as a security guarantee.
+TrustShield is a privacy-first web app for reviewing suspicious messages and protecting personal details before sharing them. The scanner uses Gemini for analysis when the API is available, with explicit local text-pattern rules as a fallback. It shows the matching evidence and explains the limits of the assessment rather than presenting a score as a security guarantee.
 
 ## Features
 
@@ -17,7 +17,8 @@ TrustShield is a privacy-first web app for reviewing suspicious messages and pro
 
 - The app does not save original messages, extracted evidence, analysis responses, or redacted text.
 - Metadata stored for history: account ID, input type, risk level and score, finding counts, and timestamp. Redaction events store only the user ID, finding count, and timestamp.
-- Content is sent to the app's API for local rule-based analysis; no third-party model is called by the current implementation.
+- Message text is sent from the app's API to Google's Gemini API for analysis when `GEMINI_API_KEY` is configured. The local rule-based scanner runs if Gemini is unavailable. Redaction remains local rule-based processing.
+- TrustShield does not store submitted text, Gemini responses, or redacted text. Google's processing is governed by the Gemini API terms; users should avoid submitting information they are not comfortable sending to the provider.
 - A low score is not proof of safety. The scanner does not verify senders, inspect attachments, or open links. Supplied URLs are treated as text.
 - Rules can miss context or produce false positives; verify consequential requests through a trusted, independent channel.
 
@@ -41,9 +42,9 @@ The API is served under `/api` and the web app at `/`.
 
 ## Environment
 
-Replit provides the PostgreSQL connection and `SESSION_SECRET`. For local development outside Replit, set `DATABASE_URL` to a PostgreSQL database and set `SESSION_SECRET` to a randomly generated secret of at least 32 bytes. Keep `.env` out of version control.
+Replit provides the PostgreSQL connection and `SESSION_SECRET`. Add `GEMINI_API_KEY` as a Replit Secret to enable Gemini analysis. For local development outside Replit, set `DATABASE_URL` to a PostgreSQL database, `SESSION_SECRET` to a randomly generated secret of at least 32 bytes, and `GEMINI_API_KEY` to your Google AI Studio key. Keep `.env` out of version control.
 
-The app currently does not require a Gemini API key. If Gemini is configured in a future iteration, requests should remain server-side and the UI must identify model-assisted results accurately.
+The Gemini key is used server-side only and is never returned to the browser. Each analysis response identifies whether Gemini or the local rule-based fallback supplied it.
 
 ## API
 

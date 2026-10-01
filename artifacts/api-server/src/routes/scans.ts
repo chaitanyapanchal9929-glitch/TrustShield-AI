@@ -11,6 +11,7 @@ import {
 import { db, redactionsTable, scansTable } from "@workspace/db";
 import authRequired from "../middlewares/authenticate";
 import { rateLimit } from "../middlewares/rate-limit";
+import { analyzeWithGemini, GeminiAnalysisError } from "../lib/gemini-scanner";
 import { analyzeContent, redactContent } from "../lib/scanner";
 
 const router: IRouter = Router();
@@ -25,8 +26,28 @@ router.post("/scans/analyze", authRequired, scanLimit, async (req, res): Promise
   }
 
   const { content, contextualUrl, inputType } = parsed.data;
-  const analysisText = contextualUrl ? `${content}\n${contextualUrl}` : content;
-  const analysis = AnalyzeContentResponse.parse(analyzeContent(analysisText, contextualUrl));
+  let analysis: ReturnType<typeof AnalyzeContentResponse.parse>;
+  let analysisSource: "gemini" | "rules" = "gemini";
+  try {
+    const geminiAnalysis = await analyzeWithGemini({ content, inputType, contextualUrl });
+    analysis = AnalyzeContentResponse.parse({
+      ...geminiAnalysis,
+      analysisSource,
+    });
+  } catch (error) {
+    analysisSource = "rules";
+    const fallbackReason =
+      error instanceof GeminiAnalysisError ? error.reason : "request_failed";
+    req.log.warn(
+      { analysisSource, fallbackReason },
+      "Gemini analysis unavailable; using rule-based fallback",
+    );
+    const analysisText = contextualUrl ? `${content}\n${contextualUrl}` : content;
+    analysis = AnalyzeContentResponse.parse({
+      ...analyzeContent(analysisText, contextualUrl),
+      analysisSource,
+    });
+  }
 
   await db.insert(scansTable).values({
     userId: req.authUser!.id,

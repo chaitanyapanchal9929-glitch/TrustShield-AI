@@ -378,6 +378,9 @@ a { color: inherit; text-decoration: none; }
 .content-area::placeholder, .text-control::placeholder { color: #a4b0a8; }
 .textarea-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; margin-bottom: 20px; color: #9ba79f; font-size: 8px; }
 .textarea-meta .mono { font-size: 8px; }
+.gemini-consent { display: flex; align-items: flex-start; gap: 8px; margin: -9px 0 16px; color: #788a80; font-size: 9px; line-height: 1.55; cursor: pointer; }
+.gemini-consent input { flex: 0 0 auto; width: 14px; height: 14px; margin: 1px 0 0; accent-color: #2e7167; }
+.gemini-consent:focus-within { outline: 2px solid #8db5a4; outline-offset: 3px; border-radius: 2px; }
 .optional-label { display: flex; justify-content: space-between; align-items: center; }
 .scan-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 5px; }
 .scan-actions .button { font-size: 10px; padding: 0 13px; }

@@ -101,6 +101,7 @@ export const analyzeContentResponseRiskScoreMax = 100;
 
 
 export const AnalyzeContentResponse = zod.object({
+  "analysisSource": zod.enum(['gemini', 'rules']),
   "riskLevel": zod.enum(['low', 'medium', 'high', 'critical']),
   "riskScore": zod.number().int().min(analyzeContentResponseRiskScoreMin).max(analyzeContentResponseRiskScoreMax),
   "summary": zod.string(),

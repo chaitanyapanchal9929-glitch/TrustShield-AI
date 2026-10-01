@@ -110,6 +110,14 @@ export interface PrivacyFinding {
   severity: PrivacyFindingSeverity;
 }
 
+export type ScanAnalysisAnalysisSource = typeof ScanAnalysisAnalysisSource[keyof typeof ScanAnalysisAnalysisSource];
+
+
+export const ScanAnalysisAnalysisSource = {
+  gemini: 'gemini',
+  rules: 'rules',
+} as const;
+
 export type ScanAnalysisRiskLevel = typeof ScanAnalysisRiskLevel[keyof typeof ScanAnalysisRiskLevel];
 
 
@@ -121,6 +129,7 @@ export const ScanAnalysisRiskLevel = {
 } as const;
 
 export interface ScanAnalysis {
+  analysisSource: ScanAnalysisAnalysisSource;
   riskLevel: ScanAnalysisRiskLevel;
   /**
      * @minimum 0

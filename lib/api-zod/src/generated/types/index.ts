@@ -18,6 +18,7 @@ export * from './redactInput';
 export * from './redactionResult';
 export * from './registerInput';
 export * from './scanAnalysis';
+export * from './scanAnalysisAnalysisSource';
 export * from './scanAnalysisRiskLevel';
 export * from './scanInput';
 export * from './scanInputInputType';

@@ -9,7 +9,7 @@ TrustShield helps people review suspicious digital messages, understand text-bas
 - `pnpm run typecheck` — typecheck all workspace packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI
 - `pnpm --filter @workspace/db run push` — apply development schema changes
-- Runtime secrets: `SESSION_SECRET` (already provided by the Replit environment)
+- Runtime secrets: `SESSION_SECRET` and `GEMINI_API_KEY`
 - The app uses the project PostgreSQL database. Scanned text and redacted text are never saved.
 
 ## Stack
@@ -31,7 +31,9 @@ TrustShield helps people review suspicious digital messages, understand text-bas
 
 ## Architecture decisions
 
-- The current scanner is explicitly rule-based because no model credential or AI credit connection is configured. It does not claim to call Gemini.
+- Message analysis uses the Google Gen AI SDK with server-side `GEMINI_API_KEY`; it falls back to the local deterministic scanner when Gemini is unavailable.
+- The scanner returns `analysisSource` (`gemini` or `rules`) so the UI can identify the provider used. The browser requires a visible consent checkbox before a scan can send text to Gemini.
+- Submitted content is sent to Gemini for analysis when available. TrustShield does not persist submitted text, model output, or redacted text; the UI discloses provider processing and the Gemini API terms.
 - Scans retain only user ID, input type, risk score/level, finding counts, and timestamp. Raw content, analysis evidence, and redacted text remain request-local.
 - Authentication uses a signed HttpOnly cookie and a Replit-managed `SESSION_SECRET`; no token is stored in browser storage.
 - User identity is derived from the verified cookie. Every history, dashboard, and delete query is scoped by that user ID.

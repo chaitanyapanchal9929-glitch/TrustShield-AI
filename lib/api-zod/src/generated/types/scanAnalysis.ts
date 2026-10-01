@@ -6,10 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PrivacyFinding } from './privacyFinding';
+import type { ScanAnalysisAnalysisSource } from './scanAnalysisAnalysisSource';
 import type { ScanAnalysisRiskLevel } from './scanAnalysisRiskLevel';
 import type { ThreatIndicator } from './threatIndicator';
 
 export interface ScanAnalysis {
+  analysisSource: ScanAnalysisAnalysisSource;
   riskLevel: ScanAnalysisRiskLevel;
   /**
      * @minimum 0

@@ -368,6 +368,9 @@ components:
     ScanAnalysis:
       type: object
       properties:
+        analysisSource:
+          type: string
+          enum: [gemini, rules]
         riskLevel:
           type: string
           enum: [low, medium, high, critical]
@@ -393,7 +396,7 @@ components:
           type: array
           items:
             type: string
-      required: [riskLevel, riskScore, summary, threatIndicators, privacyFindings, recommendations, trustConsiderations]
+      required: [analysisSource, riskLevel, riskScore, summary, threatIndicators, privacyFindings, recommendations, trustConsiderations]
     RedactInput:
       type: object
       properties:
