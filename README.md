@@ -46,6 +46,18 @@ Replit provides the PostgreSQL connection and `SESSION_SECRET`. Add `GEMINI_API_
 
 The Gemini key is used server-side only and is never returned to the browser. Each analysis response identifies whether Gemini or the local rule-based fallback supplied it.
 
+## Deploying on Vercel
+
+Import the repository into Vercel with the repository root as the project root. `vercel.json` builds only the TrustShield web app, serves the Express API through a Vercel Function, and rewrites client-side routes to the SPA. API calls stay on the same origin.
+
+Add these environment variables in Vercel for the environments you deploy:
+
+- `DATABASE_URL` — a PostgreSQL database reachable by Vercel. Replit's built-in database is not automatically available to Vercel.
+- `SESSION_SECRET` — a unique secret of at least 32 bytes.
+- `GEMINI_API_KEY` — optional; without it, analysis uses the local rule-based scanner.
+
+Before using the deployed app, provision the PostgreSQL schema with the existing database push command from the Development section, using the Vercel database's connection string. Vercel does not run database schema changes automatically.
+
 ## API
 
 - `POST /api/auth/register` — create an account and start a session
