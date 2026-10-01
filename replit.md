@@ -1,45 +1,43 @@
-# [Project name]
+# TrustShield AI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+TrustShield helps people review suspicious digital messages, understand text-based risk signals, and redact sensitive details before sharing.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-server run dev` — run the Express API service at `/api`
+- `pnpm --filter @workspace/trustshield-ai run dev` — run the React/Vite app
+- `pnpm run typecheck` — typecheck all workspace packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI
+- `pnpm --filter @workspace/db run push` — apply development schema changes
+- Runtime secrets: `SESSION_SECRET` (already provided by the Replit environment)
+- The app uses the project PostgreSQL database. Scanned text and redacted text are never saved.
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React, Vite, Wouter, TanStack Query, Tailwind CSS
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Database: PostgreSQL + Drizzle ORM
+- Validation: Zod schemas generated from `lib/api-spec/openapi.yaml`
+- Password hashing: bcryptjs; authentication: signed, HttpOnly JWT cookie
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/trustshield-ai/` — TrustShield web app
+- `artifacts/api-server/src/routes/` — auth, scanner, history, and dashboard endpoints
+- `artifacts/api-server/src/lib/scanner.ts` — transparent local text-signal and redaction rules
+- `lib/api-spec/openapi.yaml` — API contract source of truth
+- `lib/db/src/schema/` — account and metadata-only scan tables
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The current scanner is explicitly rule-based because no model credential or AI credit connection is configured. It does not claim to call Gemini.
+- Scans retain only user ID, input type, risk score/level, finding counts, and timestamp. Raw content, analysis evidence, and redacted text remain request-local.
+- Authentication uses a signed HttpOnly cookie and a Replit-managed `SESSION_SECRET`; no token is stored in browser storage.
+- User identity is derived from the verified cookie. Every history, dashboard, and delete query is scoped by that user ID.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Explainable threat indicators, privacy findings, calibrated risk scores, defensive recommendations, and data redaction
+- Authenticated metadata-only scan history, personal dashboard statistics, and history deletion
+- URL values are treated as text; the server never fetches arbitrary URLs

@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Account authentication
+  - name: scans
+    description: Security and privacy scanning
+  - name: dashboard
+    description: Personal scan statistics
 paths:
   /healthz:
     get:
@@ -24,7 +30,250 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/register:
+    post:
+      operationId: registerAccount
+      tags: [auth]
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "400":
+          description: Invalid registration details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      operationId: loginAccount
+      tags: [auth]
+      summary: Sign in to an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "400":
+          description: Invalid login details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Email or password is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get the signed-in account
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Current account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      operationId: logoutAccount
+      tags: [auth]
+      summary: Sign out
+      responses:
+        "204":
+          description: Signed out
+  /scans/analyze:
+    post:
+      operationId: analyzeContent
+      tags: [scans]
+      summary: Analyze content for security and privacy signals
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanInput"
+      responses:
+        "200":
+          description: Security and privacy assessment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanAnalysis"
+        "400":
+          description: Invalid scan input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /scans/redact:
+    post:
+      operationId: redactContent
+      tags: [scans]
+      summary: Redact sensitive information from text
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RedactInput"
+      responses:
+        "200":
+          description: Redacted content and detected categories
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RedactionResult"
+        "400":
+          description: Invalid redaction input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /scans/history:
+    get:
+      operationId: getScanHistory
+      tags: [scans]
+      summary: List the current user's scan metadata
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Recent scan metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScanRecord"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteScanHistory
+      tags: [scans]
+      summary: Delete the current user's scan history
+      security:
+        - cookieAuth: []
+      responses:
+        "204":
+          description: Scan history deleted
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /scans/history/{id}:
+    delete:
+      operationId: deleteScan
+      tags: [scans]
+      summary: Delete one scan metadata record
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Scan metadata deleted
+        "404":
+          description: Scan not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get the current user's dashboard statistics
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Personal trust and privacy statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: trustshield_session
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +282,187 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    RegisterInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 80
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 10
+          maxLength: 72
+      required: [name, email, password]
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 1
+          maxLength: 128
+      required: [email, password]
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+      required: [id, name, email]
+    ScanInput:
+      type: object
+      properties:
+        inputType:
+          type: string
+          enum: [email, sms, chat, website, other]
+        content:
+          type: string
+          minLength: 1
+          maxLength: 12000
+        contextualUrl:
+          type: string
+          maxLength: 2048
+      required: [inputType, content]
+    ThreatIndicator:
+      type: object
+      properties:
+        type:
+          type: string
+        evidence:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+      required: [type, evidence, severity]
+    PrivacyFinding:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [email, phone, name, address, financial, credential, identifier, other]
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [low, medium, high]
+      required: [type, description, severity]
+    ScanAnalysis:
+      type: object
+      properties:
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        riskScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        summary:
+          type: string
+        threatIndicators:
+          type: array
+          items:
+            $ref: "#/components/schemas/ThreatIndicator"
+        privacyFindings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrivacyFinding"
+        recommendations:
+          type: array
+          items:
+            type: string
+        trustConsiderations:
+          type: array
+          items:
+            type: string
+      required: [riskLevel, riskScore, summary, threatIndicators, privacyFindings, recommendations, trustConsiderations]
+    RedactInput:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 12000
+      required: [content]
+    RedactionResult:
+      type: object
+      properties:
+        redactedText:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        findingCount:
+          type: integer
+      required: [redactedText, categories, findingCount]
+    ScanRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        inputType:
+          type: string
+          enum: [email, sms, chat, website, other]
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        riskScore:
+          type: integer
+        privacyFindingCount:
+          type: integer
+        threatIndicatorCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, inputType, riskLevel, riskScore, privacyFindingCount, threatIndicatorCount, createdAt]
+    ScanTrendDay:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        scans:
+          type: integer
+      required: [date, scans]
+    DashboardStats:
+      type: object
+      properties:
+        totalScans:
+          type: integer
+        highRiskScans:
+          type: integer
+        privacyFindings:
+          type: integer
+        protectedItems:
+          type: integer
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScanRecord"
+        scanTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScanTrendDay"
+      required: [totalScans, highRiskScans, privacyFindings, protectedItems, recentActivity, scanTrend]
 
