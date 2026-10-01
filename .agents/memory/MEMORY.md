@@ -1,0 +1,1 @@
+- [GitHub commit syncing](github-commit-syncing.md) — REST commit creation can drop Replit-specific headers, so recreated commits may not match local SHAs.
