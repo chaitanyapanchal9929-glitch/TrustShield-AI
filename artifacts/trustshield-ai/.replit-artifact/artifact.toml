@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "TrustShield AI"
+description = "A privacy-first security assistant that analyzes suspicious messages, explains risk indicators, detects sensitive data, and creates redacted copies before users share or act on content."
+version = "1.0.0"
+id = "artifacts/trustshield-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20932
+
+[services.development]
+run = "pnpm --filter @workspace/trustshield-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/trustshield-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/trustshield-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20932"
+BASE_PATH = "/"
