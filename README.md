@@ -48,7 +48,7 @@ The Gemini key is used server-side only and is never returned to the browser. Ea
 
 ## Deploying on Vercel
 
-Import the repository into Vercel with the repository root as the project root. `vercel.json` builds only the TrustShield web app, serves the Express API through a Vercel Function, and rewrites client-side routes to the SPA. API calls stay on the same origin.
+Import the repository into Vercel with the repository root as the project root. `vercel.json` builds the workspace, serves the Express API through a Vercel Function, and rewrites client-side routes to the SPA. API calls stay on the same origin.
 
 Add these environment variables in Vercel for the environments you deploy:
 
